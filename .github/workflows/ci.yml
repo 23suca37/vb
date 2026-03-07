@@ -4,27 +4,28 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK 17
+      - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '17'
-          cache: maven
+          java-version: 17
 
-      - name: Give execute permission to mvnw
-        run: chmod +x mvnw
+      - name: Build with Maven
+        run: mvn clean verify
 
-      - name: Build with Maven Wrapper
-        run: ./mvnw clean install
+      - name: SonarCloud Scan
+        run: mvn sonar:sonar \
+          -Dsonar.projectKey=23suca37_vf-backend \
+          -Dsonar.organization=23suca37 \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}

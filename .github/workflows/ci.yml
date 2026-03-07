@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -18,8 +19,12 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build
+      - name: Build Project
         run: mvn clean install
 
-      - name: Sonar Scan
-        run: mvn sonar:sonar -Dsonar.projectKey=23suca37_vf_backend -Dsonar.organization=23suca37 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan
+        run: mvn sonar:sonar \
+          -Dsonar.projectKey=23suca37_vb \
+          -Dsonar.organization=23suca37 \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}

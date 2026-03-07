@@ -1,36 +1,54 @@
-name: SonarQube
+name: CI - Build & SonarQube Analysis
+
 on:
   push:
     branches:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0  # Full history needed for Sonar relevance
+
+      # 2️⃣ Setup JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
+          distribution: 'zulu'
           java-version: 17
-          distribution: 'zulu' # Alternative distribution options are available.
+
+      # 3️⃣ Cache SonarQube packages
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
+
+      # 4️⃣ Cache Maven packages
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+
+      # 5️⃣ Build & SonarCloud analysis
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=23suca37_vb
+        run: |
+          mvn -B verify \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=23suca37_vb \
+            -Dsonar.organization=YOUR_ORG_KEY \
+            -Dsonar.host.url=https://sonarcloud.io
